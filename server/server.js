@@ -17,7 +17,8 @@ const {
   GraphQLInt,
   GraphQLNonNull
 } = require('graphql')
-const Subscriber = require('./models/subscriber')
+
+const Student = require('./models/studentModel')
 
 mongoose.connect(process.env.DATABASE_URL, { useNewUrlParser: true })
 const db = mongoose.connection
@@ -25,13 +26,16 @@ db.on('error', (error) => console.error(error))
 db.once('open', () => console.log('Connected to Database'))
 
 
-const SubscribeType = new GraphQLObjectType({
-    name: 'Subscriber',
-    description: 'This represents a subsriber to the app',
+const StudentType = new GraphQLObjectType({
+    name: 'Student',
+    description: 'This represents a student to the app',
     fields: () => ({
       _id: { type: GraphQLNonNull(GraphQLString) },
       name: { type: GraphQLNonNull(GraphQLString)  },
-      email: { type: GraphQLNonNull(GraphQLString) }
+      email: { type: GraphQLNonNull(GraphQLString) },
+      major: { type: GraphQLNonNull(GraphQLString) },
+      age: { type: GraphQLNonNull(GraphQLInt) },
+      year: { type: GraphQLNonNull(GraphQLInt) }
     })
   })
 
@@ -39,25 +43,25 @@ const SubscribeType = new GraphQLObjectType({
     name: 'Query',
     description: 'Root Query',
     fields: () => ({
-      subscriber: {
-        type: SubscribeType,
-        description: 'A Single Subscriber',
+      student: {
+        type: StudentType,
+        description: 'A Single Student',
         args: {
           _id: { type: GraphQLString }
         },
         resolve: async (parent, args) => {
-            let subscriber
-            subscriber = await Subscriber.findById(args._id)
-           return subscriber;
+            let student
+            student = await Student.findById(args._id)
+           return student;
 
         }
       },
-      subscribers: {
-        type: new GraphQLList(SubscribeType),
-        description: 'List of All Subscribers',
+      students: {
+        type: new GraphQLList(StudentType),
+        description: 'List of All Students',
         resolve: async () => {
-           const subscribers = await Subscriber.find();
-            return subscribers;         
+           const students = await Student.find();
+            return students;         
         }
       }
     })
@@ -67,21 +71,27 @@ const SubscribeType = new GraphQLObjectType({
     name: 'Mutation',
     description: 'Root Mutation',
     fields: () => ({
-      addSubscriber: {
-        type: SubscribeType,
-        description: 'Add a Subscriber',
+      addStudent: {
+        type: StudentType,
+        description: 'Add a student',
         args: {
           name: { type: GraphQLNonNull(GraphQLString) },
-          email:{ type: GraphQLNonNull(GraphQLString) }
+          email:{ type: GraphQLNonNull(GraphQLString) },
+          age:{ type: GraphQLNonNull(GraphQLInt) },
+          major:{ type: GraphQLNonNull(GraphQLString) },
+          year:{ type: GraphQLNonNull(GraphQLInt) }
           
         },
         resolve: async (parent, args) => {
-          const subscriber = new Subscriber({
+          const student = new Student({
             name: args.name,
-            email: args.email
+            email: args.email,
+            major: args.major+" centennial",
+            year: args.year,
+            age: args.age
           });
-          const newSubscriber = await subscriber.save();
-          return newSubscriber;
+          const newStudent = await student.save();
+          return newStudent;
 
         }
       }
@@ -94,9 +104,9 @@ const schema = new GraphQLSchema({
   })
 
 app.use(express.json())
-app.use('/subscribers', expressGraphQL({
-schema: schema,
-graphiql: true
+app.use('/students', expressGraphQL({
+  schema: schema,
+  graphiql: true
 }));
 
 
