@@ -4,7 +4,16 @@ const app = express()
 const mongoose = require('mongoose')    
 const cors = require("cors")
 
-app.use(cors())
+const corsOptions = {
+  origin: '*',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+  optionsSuccessStatus: 204,
+};
+
+app.use(cors(corsOptions));
+
+//app.use(cors())
 app.use(express.json())
 
 //import {graphqlHTTP} from 'express-graphql'
