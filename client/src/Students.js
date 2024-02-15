@@ -84,11 +84,6 @@ export default function Students() {
         console.log(`Updating student: ${student.name}`);
     }
 
-    const handleDelete = (studentId) => {
-        // Implement logic for deleting student
-        console.log(`Deleting student with ID: ${studentId}`);
-    }
-
     return (
         <div>
             <h2>Students Records</h2>

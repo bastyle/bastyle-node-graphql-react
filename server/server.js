@@ -104,6 +104,31 @@ const StudentType = new GraphQLObjectType({
 
         }
       },
+      updateStudent: {
+        type: StudentType,
+        description: 'Update a student by ID',
+        args: {
+          _id: { type: GraphQLNonNull(GraphQLString) },
+          name: { type: GraphQLNonNull(GraphQLString) },
+          email:{ type: GraphQLNonNull(GraphQLString) },
+          age:{ type: GraphQLNonNull(GraphQLInt) },
+          major:{ type: GraphQLNonNull(GraphQLString) },
+          year:{ type: GraphQLNonNull(GraphQLInt) }
+        },
+        //resolve: async (parent, { _id, input }) => {
+          resolve: async (parent, args) => {
+          console.log("updating...."+JSON.stringify(args))
+          const updatedStudent = await Student.findByIdAndUpdate(args._id, {
+            name: args.name,
+            email: args.email,
+            major: args.major,
+            year: args.year,
+            age: args.age,
+          }, { new: true });
+  
+          return updatedStudent;
+        },
+      },
       deleteStudent: {
         type: StudentType,
         description: 'Delete a student by ID',
