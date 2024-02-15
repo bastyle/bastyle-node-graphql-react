@@ -1,4 +1,6 @@
-import {gql, useQuery} from "@apollo/client";
+import { gql, useQuery, useMutation } from "@apollo/client";
+import StudentForm from './StudentForm';
+import React, { useState } from 'react';
 
 const GET_STUDENTS = gql`
 {
@@ -12,25 +14,106 @@ const GET_STUDENTS = gql`
     }
 }
 `
+const ADD_STUDENT = gql`
+  mutation AddStudent($name: String!, $email: String!, $age: Int!, $major: String!, $year: Int!) {
+    addStudent(name: $name, email: $email, age: $age, major: $major, year: $year) {
+      _id
+      name
+      age
+      major
+      year
+    }
+  }
+`;
 
-export default function Students()
-{
-    console.log("getting students...")
-   const {loading, error, data , refetch}  =  useQuery(GET_STUDENTS);
-   const handleFetch = ()=>{
-    refetch();
-    console.log(data.students);
-   }
+export default function Students() {
+    //console.log("getting students...")
+    const { loading, error, data, refetch } = useQuery(GET_STUDENTS);
+    const [isAddingStudent, setIsAddingStudent] = useState(false);
+    const [addStudent] = useMutation(ADD_STUDENT);
+    /*const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        age: 0,
+        major: '',
+        year: 0,
+    });*/
 
-   if(loading) return <p>Loading, Please wait</p>
-   if(error) return <p>Error</p>
+    if (loading) return <p>Loading, Please wait</p>
+    if (error) return <p>Error</p>
+    const handleFetch = () => {
+        refetch();
+        console.log(data.students);
+    }
+
+    const handleAddStudent = async (formData) => {
+        try {
+            console.log('trying to add student.'+formData)
+            const { data } = await addStudent({
+                variables: formData,
+            });
+            console.log('trying to add student 2.')
+            console.log('New Student Added:', data.addStudent);
+            /*setFormData({
+                name: '',
+                email: '',
+                age: 0,
+                major: '',
+                year: 0,
+            });*/
+        } catch (error) {
+            console.error('Error adding student:', error.message);
+        }
+    };
+
+    const handleUpdate = (student) => {
+        // Implement logic for updating student
+        console.log(`Updating student: ${student.name}`);
+    }
+
+    const handleDelete = (studentId) => {
+        // Implement logic for deleting student
+        console.log(`Deleting student with ID: ${studentId}`);
+    }
 
     return (
         <div>
-            <ul>
-            { data.students.map(student => <li key={student._id}>{student.name}</li>)}
-            </ul>
-            < button onClick={handleFetch}>Make API Call</button>
+            <h2>Students Records</h2>
+            <button onClick={handleFetch}>Refresh Students</button>
+            <button onClick={() => setIsAddingStudent(true)}>Add New Student</button>
+            {isAddingStudent && (
+                <StudentForm
+                    onSubmit={handleAddStudent}
+                    onCancel={() => setIsAddingStudent(false)}
+                />
+            )}
+            <table className="students-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Age</th>
+                        <th>Major</th>
+                        <th>Year</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {data.students.map(student => (
+                        <tr key={student._id}>
+                            <td>{student._id}</td>
+                            <td>{student.name}</td>
+                            <td>{student.age}</td>
+                            <td>{student.major}</td>
+                            <td>{student.year}</td>
+                            <td>
+                                <button onClick={() => handleUpdate(student)}>Update</button>
+                                <button onClick={() => handleDelete(student._id)}>Delete</button>
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
-    )
+    );
 }
