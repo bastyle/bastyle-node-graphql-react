@@ -26,18 +26,34 @@ const ADD_STUDENT = gql`
   }
 `;
 
+const DELETE_STUDENT = gql`
+  mutation DeleteStudent($_id: String!) {
+    deleteStudent(_id: $_id) {
+      _id
+      name
+    }
+  }
+`;
+
 export default function Students() {
     //console.log("getting students...")
     const { loading, error, data, refetch } = useQuery(GET_STUDENTS);
     const [isAddingStudent, setIsAddingStudent] = useState(false);
     const [addStudent] = useMutation(ADD_STUDENT);
-    /*const [formData, setFormData] = useState({
-        name: '',
-        email: '',
-        age: 0,
-        major: '',
-        year: 0,
-    });*/
+    const [deleteStudent] = useMutation(DELETE_STUDENT);
+
+    const handleDeleteStudent = async (_id) => {
+      try {
+        const { data } = await deleteStudent({
+          variables: { _id },
+        });
+  
+        console.log('Student Deleted:', data.deleteStudent);
+        refetch();
+      } catch (error) {
+        console.error('Error deleting student:', error.message);
+      }
+    };
 
     if (loading) return <p>Loading, Please wait</p>
     if (error) return <p>Error</p>
@@ -48,19 +64,16 @@ export default function Students() {
 
     const handleAddStudent = async (formData) => {
         try {
-            console.log('trying to add student.'+formData)
+            console.log('trying to add student.'+ formData)
+            formData.age = parseInt(formData.age,10)
+            formData.year = parseInt(formData.year,10)
+            console.log('trying to add student 2.'+ formData)
             const { data } = await addStudent({
                 variables: formData,
             });
             console.log('trying to add student 2.')
             console.log('New Student Added:', data.addStudent);
-            /*setFormData({
-                name: '',
-                email: '',
-                age: 0,
-                major: '',
-                year: 0,
-            });*/
+            refetch();
         } catch (error) {
             console.error('Error adding student:', error.message);
         }
@@ -108,7 +121,7 @@ export default function Students() {
                             <td>{student.year}</td>
                             <td>
                                 <button onClick={() => handleUpdate(student)}>Update</button>
-                                <button onClick={() => handleDelete(student._id)}>Delete</button>
+                                <button onClick={() => handleDeleteStudent(student._id)}>Delete</button>
                             </td>
                         </tr>
                     ))}

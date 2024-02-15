@@ -96,14 +96,25 @@ const StudentType = new GraphQLObjectType({
             name: args.name,
             email: args.email,
             major: args.major+" centennial",
-            year: args.year,
-            age: args.age
+            year: Number(args.year),
+            age: Number(args.age)
           });
           const newStudent = await student.save();
           return newStudent;
 
         }
-      }
+      },
+      deleteStudent: {
+        type: StudentType,
+        description: 'Delete a student by ID',
+        args: {
+          _id: { type: GraphQLNonNull(GraphQLString) },
+        },
+        resolve: async (parent, { _id }) => {
+          const deletedStudent = await Student.findByIdAndDelete(_id);
+          return deletedStudent;
+        },
+      },
     })
   })
 
